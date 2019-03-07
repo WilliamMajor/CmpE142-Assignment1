@@ -96,35 +96,29 @@ void ls(char *input)
 
 void cd(char *input)
 {
-    int rc;
-    rc = fork();
-    if (rc < 0)//error
-    {
-        fprintf(stderr, "fork failed\n");
-        exit(1);
-    }
-    else if (rc == 0)//Child
-    {
         char s[100];
         char sep[50];
         char newinput[100];
-
+        
         strcpy(sep,"/");
         memmove(input, input + 3, strlen(input));
         strcpy(newinput,input);
-        getcwd(s, 100); 
-        newinput[strcspn(newinput, "\n")] = 0;
-        s[strcspn(s, "\n")] = 0;
-        sep[strcspn(sep, "\n")] = 0;
-        strcat(sep,newinput);
-        s[strcspn(s, "\n")] = 0;
-        strcat(s,sep);
-        chdir(s);
-    }
-    else //Parent
-    {
-        wait(NULL);
-    }
+        if(strlen(newinput) == 0)
+        {
+            printf("Blank Input");
+            chdir(getenv("HOME"));
+        }
+        else
+        {
+            getcwd(s, 100); 
+            newinput[strcspn(newinput, "\n")] = 0;
+            s[strcspn(s, "\n")] = 0;
+            sep[strcspn(sep, "\n")] = 0;
+            strcat(sep,newinput);
+            s[strcspn(s, "\n")] = 0;
+            strcat(s,sep);
+            chdir(s);
+        }
 }
 
 char * lscd(char *input)
