@@ -21,19 +21,30 @@ main(int argc, char **argv)
     {
         if (strncmp("exit", line, 4) == 0) 
         {
-            
             exit(0); // user wants to exit
         }
 
-        if (strncmp("ls", line, 2) == 0)
+        else if (strncmp("ls", line, 2) == 0)
         {
             ls(line); // user wants to ls 
         }
 
-        if (strncmp("cd", line, 2) == 0)
+        else if (strncmp("cd", line, 2) == 0)
         {
             cd(line); // user wants to change directory
         }
+        else if (strncmp("", line, 0) == 0)
+        {
+            //nothing called
+            //do nothing
+        }
+        else
+        {
+            line[strcspn(line, "\n")] = 0;
+            printf("error command: %s not found", line);
+        }
+        
+
     }
     free(line);
     if (ferror(stdin))
@@ -64,15 +75,24 @@ void ls(char *input)
                 else
                 {   
                     char * position = strchr(input, '>');
-                    if (position)
-                    {   
-                        char s[100];
-                        char *nd;
-                        memmove(input, input + 2, strlen(input));
-                        nd = lscd(input);
-                        chdir(nd);
-                        free(nd);//Work here to get write the ls result from the current directory
+                    char * position2 = strchr(input, ' ');
+                    /* this still needs a lot of work -_- need to send everything between ls and > 
+                    get into that directory then open and write to a file specified after > 
+                    in there with the output of ls probably need to parse the file we also need to handle writing multiple files
+                    like this test ls > output.9 > output.10 */
+                    if(position)// we found a file need for an output redirect
+                    {
+                        if (strlen(position) == strlen(position2)-1) //check if we need to change directory or not
+                        {   
+                            char s[100];
+                            char *nd;
+                            memmove(input, input + 3, strlen(input)); //gets rid of ls and the space after it
 
+                            //todo: make new file with specified file or open if existed and write result of ls to it
+                            // nd = lscd(input);
+                            // chdir(nd);
+                            // free(nd);
+                        }
                     }
                     else if (strlen(input) > 3)
                     {
@@ -80,7 +100,7 @@ void ls(char *input)
                         input[strcspn(input, "\n")] = 0;
                         char *argm[] = {"ls", input, NULL};
                         execvp(argm[0], argm);
-                        printf("wow");
+                        printf("wow errors");
                     }
                     else
                     {
@@ -112,12 +132,15 @@ void cd(char *input) //cd command Think this is pretty done...
         }
         else
         {
+            char * position = strchr(newinput, '/');
+
             getcwd(s, 100); 
 
             newinput[strcspn(newinput, "\n")] = 0;
             s[strcspn(s, "\n")] = 0;
             sep[strcspn(sep, "\n")] = 0;
-            if (strchr(input, '/') == NULL)
+            
+            if (strlen(position)!= strlen(newinput)-1)
             {
                 strcat(sep,newinput);
                 s[strcspn(s, "\n")] = 0;
@@ -125,8 +148,8 @@ void cd(char *input) //cd command Think this is pretty done...
             }
             else
             {
-               s[strcspn(s, "\n")] = 0;
-               strcat(s,newinput);
+                s[strcspn(s, "\n")] = 0;
+                strcat(s,newinput);
             }
             if(chdir(s) == -1)
             {
@@ -134,42 +157,48 @@ void cd(char *input) //cd command Think this is pretty done...
             }
         }
 }
-
-char * lscd(char *input) // Thinking this is how im going to accomplish part of the ls > commands... 
+// Thinking this is how im going to help accomplish part of the ls > commands... 
+char * lscd(char *input) 
 {
-    int rc;
-    rc = fork();
-    if (rc < 0)//error
+     
+    char s[100];
+    char sep[50];
+    char newinput[100];
+    char * returnvar;
+    returnvar = (char *) malloc(100);
+    
+    strcpy(sep,"/");
+    memmove(input, input + 3, strlen(input));
+    strcpy(newinput,input);
+    if(strlen(newinput) == 0)
     {
-        fprintf(stderr, "fork failed\n");
-        exit(1);
+        chdir(getenv("HOME"));
     }
-    else if (rc == 0)//Child
+    else
     {
-        char s[100];
-        char sep[50];
-        char newinput[100];
-        char * returnvar;
-        returnvar = (char *) malloc(100);
-
-        strcpy(sep,"/");
-        memmove(input, input + 3, strlen(input));
-        strcpy(newinput,input);
         getcwd(s, 100); 
+
         newinput[strcspn(newinput, "\n")] = 0;
         s[strcspn(s, "\n")] = 0;
         sep[strcspn(sep, "\n")] = 0;
-        strcat(sep,newinput);
-        s[strcspn(s, "\n")] = 0;
-        strcat(s,sep);
-        strcpy(returnvar,s);
-        chdir(s);
-
-        return returnvar;  
-    }
-    else //Parent
-    {
-        wait(NULL);
+        if (strchr(input, '/') == NULL)
+        {
+            strcat(sep,newinput);
+            s[strcspn(s, "\n")] = 0;
+            strcat(s,sep);
+            strcpy(returnvar, s);
+        }
+        else
+        {
+            s[strcspn(s, "\n")] = 0;
+            strcat(s,newinput);
+            strcpy(returnvar, s);
+        }
+        if(chdir(s) == -1)
+        {
+            printf("bash: cd: %s: No such file or directory\n", s);
+        }
+        return returnvar;
     }
 
 
