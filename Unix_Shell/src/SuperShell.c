@@ -26,14 +26,14 @@ main(int argc, char **argv)
 
         else if (strncmp("ls", line, 2) == 0)
         {
-            ls(line); // user wants to ls 
+            ls(line); // user wants to ls **bug right now if you follow ls with a space but nothing else
         }
 
         else if (strncmp("cd", line, 2) == 0)
         {
-            cd(line); // user wants to change directory
+            cd(line); // user wants to change directory 
         }
-        else if (strncmp("", line, 0) == 0)
+        else if (strncmp("", line, 0) == 0 || strncmp(" ", line, 1))
         {
             //nothing called
             //do nothing
@@ -122,18 +122,19 @@ void cd(char *input) //cd command Think this is pretty done...
         char s[100];
         char sep[50];
         char newinput[100];
+        char * position = strchr(newinput, '/');
         
         strcpy(sep,"/");
         memmove(input, input + 3, strlen(input));
         strcpy(newinput,input);
-        if(strlen(newinput) == 0)
+
+        if(strlen(newinput) == 0 || strncmp("", newinput, 0) == 0)
         {
             chdir(getenv("HOME"));
         }
         else
         {
-            char * position = strchr(newinput, '/');
-
+            
             getcwd(s, 100); 
 
             newinput[strcspn(newinput, "\n")] = 0;
