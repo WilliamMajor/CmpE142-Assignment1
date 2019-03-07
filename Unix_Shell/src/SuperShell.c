@@ -105,19 +105,30 @@ void cd(char *input)
         strcpy(newinput,input);
         if(strlen(newinput) == 0)
         {
-            printf("Blank Input");
             chdir(getenv("HOME"));
         }
         else
         {
             getcwd(s, 100); 
+
             newinput[strcspn(newinput, "\n")] = 0;
             s[strcspn(s, "\n")] = 0;
             sep[strcspn(sep, "\n")] = 0;
-            strcat(sep,newinput);
-            s[strcspn(s, "\n")] = 0;
-            strcat(s,sep);
-            chdir(s);
+            if (strchr(input, '/') == NULL)
+            {
+                strcat(sep,newinput);
+                s[strcspn(s, "\n")] = 0;
+                strcat(s,sep);
+            }
+            else
+            {
+               s[strcspn(s, "\n")] = 0;
+               strcat(s,newinput);
+            }
+            if(chdir(s) == -1)
+            {
+                printf("bash: cd: %s: No such file or directory\n", s);
+            }
         }
 }
 
