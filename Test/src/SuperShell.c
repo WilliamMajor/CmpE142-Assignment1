@@ -19,8 +19,9 @@ main(int argc, char **argv)
         // fork
         // if child, exec
         // if parent, wait
+        //Test
         }
         free(line);
         if (ferror(stdin))
-            err(1, "getline");        
+            err(1, "getline");    
 }
