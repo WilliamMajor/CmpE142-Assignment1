@@ -6,7 +6,9 @@
 #include <sys/wait.h>
 #include <stdbool.h>
 
-void ls(void);
+void ls(char *input);
+void cd(char *input);
+char * lscd(char *input);
 
 int
 main(int argc, char **argv)
@@ -25,7 +27,13 @@ main(int argc, char **argv)
 
         if (strncmp("ls", line, 2) == 0)
         {
-            ls();
+            // memmove(line, line + 3, strlen(line));
+            ls(line);
+        }
+
+        if (strncmp("cd", line, 2) == 0)
+        {
+            cd(line);
         }
     }
     free(line);
@@ -35,7 +43,7 @@ main(int argc, char **argv)
 
 
 /********************************* Command Functions **********************************/
-void ls(void)
+void ls(char *input)
 {
     int rc;
     rc = fork();
@@ -51,10 +59,32 @@ void ls(void)
                     printf("error");
                 } 
                 else
-                {
-                    char *argm[] = {"ls", 0};
-                    execvp(argm[0], argm);
-                    printf("obviously there was an error here, damn");
+                {   
+                    char * position = strchr(input, '>');
+                    if (position)
+                    {   
+                        char s[100];
+                        char *nd;
+                        memmove(input, input + 2, strlen(input));
+                        nd = lscd(input);
+                        chdir(nd);
+                        free(nd);//Work here to get write the ls result from the current directory
+
+                    }
+                    else if (strlen(input) > 3)
+                    {
+                        memmove(input, input + 3, strlen(input));
+                        input[strcspn(input, "\n")] = 0;
+                        char *argm[] = {"ls", input, NULL};
+                        execvp(argm[0], argm);
+                        printf("wow");
+                    }
+                    else
+                    {
+                        char *argm[] = {"ls", NULL};
+                        execvp(argm[0], argm);
+                        printf("obviously there was an error here, damn");
+                    }
                 }
                 
             }
@@ -62,4 +92,77 @@ void ls(void)
             {
                 wait(NULL);
             }
+}
+
+void cd(char *input)
+{
+    int rc;
+    rc = fork();
+    if (rc < 0)//error
+    {
+        fprintf(stderr, "fork failed\n");
+        exit(1);
+    }
+    else if (rc == 0)//Child
+    {
+        char s[100];
+        char sep[50];
+        char newinput[100];
+
+        strcpy(sep,"/");
+        memmove(input, input + 3, strlen(input));
+        strcpy(newinput,input);
+        getcwd(s, 100); 
+        newinput[strcspn(newinput, "\n")] = 0;
+        s[strcspn(s, "\n")] = 0;
+        sep[strcspn(sep, "\n")] = 0;
+        strcat(sep,newinput);
+        s[strcspn(s, "\n")] = 0;
+        strcat(s,sep);
+        chdir(s);
+    }
+    else //Parent
+    {
+        wait(NULL);
+    }
+}
+
+char * lscd(char *input)
+{
+    int rc;
+    rc = fork();
+    if (rc < 0)//error
+    {
+        fprintf(stderr, "fork failed\n");
+        exit(1);
+    }
+    else if (rc == 0)//Child
+    {
+        char s[100];
+        char sep[50];
+        char newinput[100];
+        char * returnvar;
+        returnvar = (char *) malloc(100);
+
+        strcpy(sep,"/");
+        memmove(input, input + 3, strlen(input));
+        strcpy(newinput,input);
+        getcwd(s, 100); 
+        newinput[strcspn(newinput, "\n")] = 0;
+        s[strcspn(s, "\n")] = 0;
+        sep[strcspn(sep, "\n")] = 0;
+        strcat(sep,newinput);
+        s[strcspn(s, "\n")] = 0;
+        strcat(s,sep);
+        strcpy(returnvar,s);
+        chdir(s);
+
+        return returnvar;  
+    }
+    else //Parent
+    {
+        wait(NULL);
+    }
+
+
 }
