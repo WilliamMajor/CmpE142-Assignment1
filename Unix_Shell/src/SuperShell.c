@@ -17,23 +17,22 @@ main(int argc, char **argv)
     size_t linesize = 0;
     size_t linelen;
     int rc;
-    while ((linelen = getline(&line, &linesize, stdin)) != -1) 
+    while ((linelen = getline(&line, &linesize, stdin)) != -1) //Want to figure out a way to pring out the shell name before this each time
     {
         if (strncmp("exit", line, 4) == 0) 
         {
-            // user wants to exit
-            exit(0);
+            
+            exit(0); // user wants to exit
         }
 
         if (strncmp("ls", line, 2) == 0)
         {
-            // memmove(line, line + 3, strlen(line));
-            ls(line);
+            ls(line); // user wants to ls 
         }
 
         if (strncmp("cd", line, 2) == 0)
         {
-            cd(line);
+            cd(line); // user wants to change directory
         }
     }
     free(line);
@@ -54,9 +53,13 @@ void ls(char *input)
             }
             else if (rc == 0)//Child
             {
-               if (access("/bin/ls",X_OK) == -1)
+               if (access("/bin/ls",X_OK) == -1) // make sure the ls command is where we think it is
                 {
-                    printf("error");
+                    if(access("/usr/bin/ls",X_OK) == -1) // if we dont see the ls command here either we have an error
+                    {
+                        printf("error no ls command found in /bin/ls or /user/bin/ls");
+                        exit(-1);
+                    } 
                 } 
                 else
                 {   
@@ -94,7 +97,7 @@ void ls(char *input)
             }
 }
 
-void cd(char *input)
+void cd(char *input) //cd command Think this is pretty done...
 {
         char s[100];
         char sep[50];
@@ -132,7 +135,7 @@ void cd(char *input)
         }
 }
 
-char * lscd(char *input)
+char * lscd(char *input) // Thinking this is how im going to accomplish part of the ls > commands... 
 {
     int rc;
     rc = fork();
