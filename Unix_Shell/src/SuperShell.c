@@ -5,6 +5,9 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <stdbool.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 void ls(char *input);
 void cd(char *input);
@@ -80,19 +83,53 @@ void ls(char *input)
                     get into that directory then open and write to a file specified after > 
                     in there with the output of ls probably need to parse the file we also need to handle writing multiple files
                     like this test ls > output.9 > output.10 */
-                    if(position)// we found a file need for an output redirect
+                    if(position)// we found a need for an output redirect
                     {
                         if (strlen(position) == strlen(position2)-1) //check if we need to change directory or not
                         {   
-                            char s[100];
-                            char *nd;
-                            memmove(input, input + 3, strlen(input)); //gets rid of ls and the space after it
-
-                            //todo: make new file with specified file or open if existed and write result of ls to it
-                            // nd = lscd(input);
-                            // chdir(nd);
-                            // free(nd);
+                            printf("no need to change directory");
                         }
+                        else
+                        {
+                            char *nd;
+                            char * holder;
+                            char * filelocation;
+                            int forkreturn;
+                            int fd;
+
+
+                            memmove(input, input + 3, strlen(input)); //gets rid of ls and the space after it
+                            strcpy(filelocation, input);
+                            holder = strchr(input, '>');
+                            filelocation[strlen(filelocation) - (strlen(holder) + 1)] = 0; // add terminating character after our file location
+
+                            if(chdir(filelocation) == -1)
+                            {
+                                printf("bash: cd: %s: No such file or directory\n", filelocation);
+                            }
+                            //ok we're in the right directory now we need to write the result of ls to it...still not working
+                            forkreturn = fork();
+                            if (forkreturn = 0)
+                            {       
+                                
+
+                                fd = open("test.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+                                
+                                dup2(fd, 1);
+
+                                char *argm[] = {"ls", NULL};
+                                execvp(argm[0], argm);
+                                printf("failed");
+                            }
+                            else
+                            {
+                                wait(NULL);
+                                fsync(fd);
+                                close(fd);
+                            }
+                            
+                        }
+                        
                     }
                     else if (strlen(input) > 3)
                     {
@@ -159,53 +196,7 @@ void cd(char *input) //cd command Think this is pretty done...Nope found a bug n
         
             if(chdir(s) == -1)
             {
-                printf("bash: cd: %s: No such file or directory\n", s);
+                printf("bash: cd: %s: No such file or directory\n", newinput);
             }
         }
-}
-// Thinking this is how im going to help accomplish part of the ls > commands... 
-char * lscd(char *input) 
-{
-     
-    char s[100];
-    char sep[50];
-    char newinput[100];
-    char * returnvar;
-    returnvar = (char *) malloc(100);
-    
-    strcpy(sep,"/");
-    memmove(input, input + 3, strlen(input));
-    strcpy(newinput,input);
-    if(strlen(newinput) == 0)
-    {
-        chdir(getenv("HOME"));
-    }
-    else
-    {
-        getcwd(s, 100); 
-
-        newinput[strcspn(newinput, "\n")] = 0;
-        s[strcspn(s, "\n")] = 0;
-        sep[strcspn(sep, "\n")] = 0;
-        if (strchr(input, '/') == NULL)
-        {
-            strcat(sep,newinput);
-            s[strcspn(s, "\n")] = 0;
-            strcat(s,sep);
-            strcpy(returnvar, s);
-        }
-        else
-        {
-            s[strcspn(s, "\n")] = 0;
-            strcat(s,newinput);
-            strcpy(returnvar, s);
-        }
-        if(chdir(s) == -1)
-        {
-            printf("bash: cd: %s: No such file or directory\n", s);
-        }
-        return returnvar;
-    }
-
-
 }
