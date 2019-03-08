@@ -26,14 +26,14 @@ main(int argc, char **argv)
 
         else if (strncmp("ls", line, 2) == 0)
         {
-            ls(line); // user wants to ls **bug right now if you follow ls with a space but nothing else
+            ls(line); // user wants to ls 
         }
 
         else if (strncmp("cd", line, 2) == 0)
         {
-            cd(line); // user wants to change directory 
+            cd(line); // user wants to change directory
         }
-        else if (strncmp("", line, 0) == 0 || strncmp(" ", line, 1))
+        else if (strncmp("", line, 0) == 0)
         {
             //nothing called
             //do nothing
@@ -117,41 +117,33 @@ void ls(char *input)
             }
 }
 
-void cd(char *input) //cd command Think this is pretty done...
+void cd(char *input) //cd command Think this is pretty done...Nope found a bug not adding in initial / to path when the path has other /s...
 {
         char s[100];
         char sep[50];
         char newinput[100];
-        char * position = strchr(newinput, '/');
         
         strcpy(sep,"/");
         memmove(input, input + 3, strlen(input));
         strcpy(newinput,input);
-
-        if(strlen(newinput) == 0 || strncmp("", newinput, 0) == 0)
+        if(strlen(newinput) == 0 || strlen(newinput) == 1)
         {
             chdir(getenv("HOME"));
         }
+
+        
         else
         {
-            
             getcwd(s, 100); 
 
             newinput[strcspn(newinput, "\n")] = 0;
             s[strcspn(s, "\n")] = 0;
             sep[strcspn(sep, "\n")] = 0;
             
-            if (strlen(position)!= strlen(newinput)-1)
-            {
-                strcat(sep,newinput);
-                s[strcspn(s, "\n")] = 0;
-                strcat(s,sep);
-            }
-            else
-            {
-                s[strcspn(s, "\n")] = 0;
-                strcat(s,newinput);
-            }
+            strcat(sep,newinput);
+            s[strcspn(s, "\n")] = 0;
+            strcat(s,sep);
+        
             if(chdir(s) == -1)
             {
                 printf("bash: cd: %s: No such file or directory\n", s);
