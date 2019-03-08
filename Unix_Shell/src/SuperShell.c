@@ -37,7 +37,7 @@ main(int argc, char **argv)
         {
             cd(line); // user wants to change directory
         }
-        else if (strncmp("", line, 0) == 0)
+        else if (strncmp("\n", line, 2) == 0)
         {
             //nothing called
             //do nothing
@@ -45,7 +45,7 @@ main(int argc, char **argv)
         else
         {
             line[strcspn(line, "\n")] = 0;
-            printf("error command: %s not found", line);
+            printf("error command: %s not found\n", line);
         }
         
 
@@ -193,7 +193,6 @@ void redirect(char * position, char * position2, char * input)
         
         memmove(holder, holder + 2, strlen(holder));
         holder[strcspn(holder, "\n")] = 0;
-        printf("%s\n",holder);
 
         fd = open(holder, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
         
