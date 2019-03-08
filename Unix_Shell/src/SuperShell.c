@@ -164,18 +164,14 @@ void cd(char *input) //cd command Think this is pretty done...Nope found a bug n
 
 void redirect(char * position, char * position2, char * input)
 {
-    if (strlen(position) == strlen(position2)-1) //check if we need to change directory or not
-    {   
-        printf("no need to change directory");
-    }
-    else
-    {
-        char * holder;
-        char * filelocation;
-        int forkreturn;
-        int fd;
-        int save_out = dup(fileno(stdout));
+    int forkreturn;
+    int fd;
+    int save_out;
+    char * holder;
+    char * filelocation;
 
+    if (strlen(position) != strlen(position2)-1) //check if we need to change directory or not
+    {  
         memmove(input, input + 3, strlen(input)); //gets rid of ls and the space after it
         strcpy(filelocation, input);
         holder = strchr(input, '>');
@@ -186,30 +182,34 @@ void redirect(char * position, char * position2, char * input)
             printf("bash: cd: %s: No such file or directory\n", filelocation);
         }
         //ok we're in the right directory now we need to write the result of ls to it...still not working
-        
-        forkreturn = fork(); 
-        if (forkreturn == 0)//child
-        {       
-            
-
-            fd = open("test.txt", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-            
-            int save_out = dup(fileno(stdout));
-
-            dup2(fd, fileno(stdout));
-
-            puts("This is a test");
-
-            char *argm[] = {"ls", NULL};
-            execvp(argm[0], argm);
-            printf("failed");
-        }
-        else //parent
-        {
-            wait(NULL);
-            fflush(stdout); close(fd);
-            close(save_out);
-        }
-        
     }
+    forkreturn = fork(); 
+    if (forkreturn == 0)//child
+    {   
+        char * newholder;
+        char * filename;
+
+        holder = strchr(input, '>');
+        
+        memmove(holder, holder + 2, strlen(holder));
+        holder[strcspn(holder, "\n")] = 0;
+        printf("%s\n",holder);
+
+        fd = open(holder, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+        
+        save_out = dup(fileno(stdout));
+
+        dup2(fd, fileno(stdout));
+
+        char *argm[] = {"ls", NULL};
+        execvp(argm[0], argm);
+        printf("failed");
+    }
+    else //parent
+    {
+        wait(NULL);
+        fflush(stdout); close(fd);
+        close(save_out);
+    }
+
 }
