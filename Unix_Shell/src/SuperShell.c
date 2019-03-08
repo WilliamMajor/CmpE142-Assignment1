@@ -122,17 +122,30 @@ void cd(char *input) //cd command Think this is pretty done...Nope found a bug n
         char s[100];
         char sep[50];
         char newinput[100];
+        bool notspacesonly = true;
         
         strcpy(sep,"/");
         memmove(input, input + 3, strlen(input));
         strcpy(newinput,input);
+
+        if(strlen(newinput) > 1)
+        {
+            if(strncmp("  ", newinput,2) == 0)
+            {
+                notspacesonly = false;
+                chdir(getenv("HOME"));
+            }
+            else
+            {
+                notspacesonly = true;
+            }
+            
+        }
         if(strlen(newinput) == 0 || strlen(newinput) == 1)
         {
             chdir(getenv("HOME"));
         }
-
-        
-        else
+        else if (notspacesonly)
         {
             getcwd(s, 100); 
 
