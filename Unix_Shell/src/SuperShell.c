@@ -12,7 +12,7 @@
 
 void ls(char *input);
 void cd(char *input);
-void redirect(char *position, char* position2, char * input);
+void redirect(char *position, char* position2, char * input, char directory[]);
 
 int
 main(int argc, char **argv)
@@ -60,6 +60,9 @@ main(int argc, char **argv)
 void ls(char *input)
 {
     int rc;
+    char cwd[256];
+    getcwd(cwd,100);
+    strcat(cwd,"/");
     rc = fork();
     if (rc < 0)//error
     {
@@ -88,7 +91,7 @@ void ls(char *input)
             if(position)// we found a need for an output redirect
             {
 
-                redirect(position, position2, input);
+                redirect(position, position2, input, cwd);
                 
             }
             else if (strlen(input) > 3)
@@ -162,7 +165,7 @@ void cd(char *input) //cd command Think this is pretty done...Nope found a bug n
     }
 }
 
-void redirect(char * position, char * position2, char * input)
+void redirect(char * position, char * position2, char * input, char directory[])
 {
     int forkreturn;
     int fd;
@@ -193,8 +196,9 @@ void redirect(char * position, char * position2, char * input)
         
         memmove(holder, holder + 2, strlen(holder));
         holder[strcspn(holder, "\n")] = 0;
+        strcat(directory,holder);
 
-        fd = open(holder, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+        fd = open(directory, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
         
         save_out = dup(fileno(stdout));
 
