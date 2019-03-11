@@ -20,7 +20,7 @@ main(int argc, char **argv)
     char *line = NULL;
     size_t linesize = 0;
     size_t linelen;
-    int rc;
+    int rc;f
     while ((linelen = getline(&line, &linesize, stdin)) != -1) //Want to figure out a way to pring out the shell name before this each time
     {
         if (strncmp("exit", line, 4) == 0) 
@@ -184,7 +184,7 @@ void redirect(char * position, char * position2, char * input, char directory[])
         {
             printf("bash: cd: %s: No such file or directory\n", filelocation);
         }
-        //ok we're in the right directory now we need to write the result of ls to it...still not working
+        //ok we're in the right directory now we need to write the result of ls to it
     }
     forkreturn = fork(); 
     if (forkreturn == 0)//child
