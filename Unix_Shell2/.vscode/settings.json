@@ -2,6 +2,8 @@
     "C_Cpp.intelliSenseEngineFallback": "Enabled",
     "files.associations": {
         "iostream": "cpp",
-        "string_view": "cpp"
+        "string_view": "cpp",
+        "fstream": "cpp",
+        "iosfwd": "cpp"
     }
 }
