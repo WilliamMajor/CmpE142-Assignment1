@@ -32,7 +32,14 @@ main(int argc, char **argv)
         {
             ls(line); // user wants to ls 
         }
-
+	    else if (strncmp("cat", line, 3) == 0)
+        {
+            cat(line);
+        }
+        else if (strncmp("$PATH", line, 5) == 0)
+        {
+            path(line);
+        }  
         else if (strncmp("cd", line, 2) == 0)
         {
             cd(line); // user wants to change directory
@@ -216,3 +223,46 @@ void redirect(char * position, char * position2, char * input, char directory[])
     }
 
 }
+
+void cat(char *input[])
+{
+	int rc, fr, t;
+
+	rc = fork();
+
+	if(rc < 0)
+	{
+		printf("failed");;
+		exit(1);
+	}
+	else if (rc == 0)
+	{
+
+		fr = open(input, O_RDONLY);
+
+		if(fc < 0)
+		{
+			printf("failed");;
+			exit(1);
+		}
+
+		while(read(fr, &t, 1))
+			write(STDOUT_FILENO, &t, 1); //one byte at a time
+
+		close(fc);
+
+	}
+	else
+	{
+		wait(NULL);
+	}
+    return 0;
+}
+
+void path(char * input[])
+{
+    //still working on a separate file.
+
+
+}
+
