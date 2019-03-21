@@ -19,6 +19,7 @@
 #include<sys/wait.h>
 #include <ctype.h>
 #include <fcntl.h>
+#include <dirent.h>
 
 
 #include <experimental/filesystem>
@@ -29,15 +30,18 @@ using namespace std;
 
 void 	ls(string input);
 void 	cd(string input);
-string 	charptostr(char* input);
+void	cat(string input);
+void	rm(string input);
+void	cwdprint(void);
 
 int main(int argc, char *argv[])
 {
-	string line = "";
-
-	while (getline(cin,line)){
-
-
+	string line = ""; 
+	while(1)
+	{
+		//cwdprint();
+		getline(cin,line);
+	
 		if (line.compare(0,4,"exit") == 0)
 		{
 			exit(0);
@@ -55,20 +59,30 @@ int main(int argc, char *argv[])
 
 		else if(line.compare(0,3,"cat") == 0)
 		{
-
+			cat(line);
 		}
 
-		else if(line.compare(0,0,"") == 0)
+		else if(line.compare(0, 2, "rm") == 0)
 		{
-			
+			rm(line);
+		}
+
+		else if(line.length() == 0)
+		{
 		}
 		else
 		{
-			cout<<"error command not found";
+			cout<<"error command not found" << endl;
 		}
 	}
 
 	return 0;
+}
+
+void cwdprint(void)
+{
+	char* cwd = getcwd(cwd,100);
+	cout << cwd << " ";
 }
 
 void ls(string input)
@@ -264,6 +278,74 @@ void cd(string input)
 		
 	}
 	
+}
+
+void cat(string input)
+{
+	
+}
+
+void rm(string input)
+{
+	string arguments, command;
+	int found, found2, status;
+	DIR *blah = NULL;
+	struct dirent *DirEntry = NULL;
+	unsigned char isFile =0x8;
+	found = input.find("-");
+	if(found > 0)
+	{
+		input.erase(0, found+1);
+		found = input.find(" ");
+		arguments = input;
+		command = input;
+		arguments.erase(found, arguments.length());
+		command.erase(0,found + 1);
+
+		if (arguments == "r")
+		{
+			char const * removecmd = command.data();
+			if(remove(removecmd) != 0)
+			{
+				cout << "rm: cannot remove '" << command <<"' : no such file or directory" << endl;
+			}
+		}
+		else if(arguments == "f")
+		{
+			char const * filecmd = command.data();
+			blah = opendir(".");
+			if(blah == NULL)
+			{
+				cout << "does not exits" << endl;
+				exit(8);
+			}
+			DirEntry = readdir(blah);
+			switch (DirEntry -> d_type)
+			{
+				case DT_REG:
+					remove(filecmd);
+					break;
+				case DT_DIR:
+					cout << "this is a diretory" << endl;
+					break;
+				default:
+					cout <<"Well this is awkward" << endl;
+			}
+		}
+		else if(arguments == "rf")
+		{
+			char const * removecmd = command.data();
+			remove(removecmd);
+		}
+		
+	}
+	else
+	{
+		if(input.length() == 2)
+		{
+			cout <<"rm: missing operand" << endl;
+		}
+	}
 }
 
 // string charptostr(char* input)
