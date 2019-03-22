@@ -28,6 +28,8 @@ void 	ls(string input);
 void 	cd(string input);
 void	cat(string input);
 void	rm(string input);
+void	path(string input);
+void	echo(string input);
 
 int main(int argc, char *argv[])
 {
@@ -40,29 +42,25 @@ int main(int argc, char *argv[])
 		getline(cin,line);
 	
 		if (line.compare(0,4,"exit") == 0)
-		{
 			exit(0);
-		}
 
 		else if (line.compare(0,2,"ls") == 0)
-		{
 			ls(line);
-		}
 
 		else if(line.compare(0,2,"cd") == 0)
-		{
 			cd(line);
-		}
 
 		else if(line.compare(0,3,"cat") == 0)
-		{
 			cat(line);
-		}
 
 		else if(line.compare(0, 2, "rm") == 0)
-		{
 			rm(line);
-		}
+		
+		else if(line.compare(0, 4, "path") == 0)
+			path(line);
+
+		else if(line.compare(0, 4, "echo") == 0)
+			echo(line);
 
 		else if(line.length() == 0)
 		{
@@ -75,6 +73,16 @@ int main(int argc, char *argv[])
 	}
 
 	return 0;
+}
+
+void echo(string input)
+{
+	cout << input.erase(0,5)<<endl;
+}
+
+void path(string input)
+{
+
 }
 
 void ls(string input)
