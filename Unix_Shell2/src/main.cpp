@@ -267,10 +267,23 @@ void cd(string input)
 void cat(string input)
 {
 	int rc, fr, t, found;
+	int spaces[100];
 	string newinput;
 	char const * c;
+	char char_array[input.length() + 1];
 
-	found = input.find(" ");
+	strcpy(char_array, input.c_str());
+	int count = 0;
+	for (int i = 0; i < input.length(); i++)
+	{
+		
+		if(char_array[i] == ' ')
+		{
+			spaces[count] = i;
+			count++;
+		}
+	}
+	
 	
 	if(input.length() == 3)
 	{
@@ -279,8 +292,72 @@ void cat(string input)
 			cout << newinput << endl;
 		}
 	}
+	//split all commands int individual parts of a string array and we will operate on them seperately
+	else if(input.length() > 3)
+	{
+		string files[sizeof(spaces) + 1];
+		string tmp;
+		bool fwdslash;
+		int location = 0;
+		int length = 0;
 
-	//else if(1)//look for how many spaces there are and then put each entry into  const char * array
+		while(spaces[location + 1] != 0)//handles all but the last one
+		{
+			fwdslash = true;
+			tmp = "";
+			for (int a = spaces[location] + 1; a < spaces[location + 1]; a++)
+			{
+				if((char_array[a] == '/') && fwdslash && ( a == spaces[location] +1))
+				{
+					fwdslash = false;
+				}
+				else
+				{
+					tmp += char_array[a];
+				}
+			}
+			files[location] = tmp;
+			location++;
+		}
+
+		fwdslash = true;
+		tmp = "";
+		for(int a = spaces[location] + 1; a < sizeof(char_array); a++) // handle the last one
+		{
+			if((char_array[a] == '/') && fwdslash && ( a == spaces[location] +1))
+			{
+				fwdslash = false;
+			}
+			else
+			{
+				tmp += char_array[a];
+			}
+		}
+		files[location] = tmp;
+
+
+		while(!files[length].empty())
+		{
+			c = files[length].data();
+			fr = open(c, O_RDONLY);
+
+			if(fr < 0)
+			{
+				cout << "error opening file" <<endl;
+				exit(1);
+			}
+
+			while(read(fr, &t, 1))
+			{
+				write(STDOUT_FILENO, &t, 1);
+			}
+
+			close(fr);
+			length++;
+		}
+	}
+
+	
 
 	// c = input.data();
 	// cout << c << endl;
