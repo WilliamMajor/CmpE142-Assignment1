@@ -530,7 +530,15 @@ void ls(string input, string cwd)
 
 				if(found2 > 0) // we found two > so we need to make one file and write to the second
 				{
-						testfile = input.substr((found+2),(found2-(found+2)));
+						if (input.find(" ") !=-1)
+						{
+							
+							testfile = input.substr((found+2),(found2-(found+2)));
+						}
+						else
+						{
+							testfile = input.substr((found),(found2-(found)));
+						}
 						char * cstr = new char[testfile.length()];
 						strcpy(cstr,testfile.c_str());
 
@@ -568,7 +576,7 @@ void ls(string input, string cwd)
 							exit(1);
 						}
 						
-						testfile = input.substr(found+2,input.length());
+						testfile = input.substr(found+1,input.length());
 						char * cstr = new char[testfile.length()];
 						strcpy(cstr,testfile.c_str());
 						
