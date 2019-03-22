@@ -32,6 +32,7 @@ void	path(string input);
 void	echo(string input);
 void 	sleep(string input);
 void 	multcmd(string input[], bool padstat);
+void	shellex(string input, bool padstat);
 
 string GlobalPath[100];
 char const * GP;
@@ -179,6 +180,9 @@ int main(int argc, char *argv[])
 			else if (line.compare(0,5, "sleep") == 0 && ! badpath)
 				sleep(line);
 
+			else if (line.find(".sh") != -1)
+				shellex(line, badpath);
+
 			else if(line.length() == 0)
 			{
 			}
@@ -229,6 +233,10 @@ void multcmd(string input[], bool pathstat)
 		else if (input[i].compare(0,5, "sleep") == 0 && !pathstat)
 			sleep(input[i]);
 
+		else if (input[i].find(".sh") != -1)
+			shellex(input[i], pathstat);
+
+
 		else if(input[i].length() == 0)
 		{
 		}
@@ -239,6 +247,136 @@ void multcmd(string input[], bool pathstat)
 		i++;
 	}
 	
+}
+
+void shellex(string input1, bool pathstat)
+{
+	char input[100];
+	int spaces[100]; 
+	int ands[100];
+	int count = 0;
+	int count2 = 0;
+	int offset = 0;
+	int location = 0;
+	int length = 0;
+	bool spcs = false;
+	bool mult = false;
+	string shellcmds;
+	string tmp;
+
+	if(input1.find("&") != -1)
+	{
+		string commandset[100];
+		strcpy(input, input1.c_str());
+
+		for (int i = 0; i < input1.length(); i++)
+		{
+			if(((input[i] == ' ') && (input[i+1] == '&')) || ((input[i] == ' ') && (input[i-1] == '&')))
+			{
+				spaces[count] = i;
+				count++;
+				spcs = true;
+			}
+		}
+		if(spcs)
+		{
+			while(spaces[count2] != 0)
+			{
+				input1.erase(spaces[count2] - offset , 1);
+				count2++;
+				offset++;
+			}
+		}
+
+		strcpy(input, input1.c_str());
+		count = 0;
+		for (int i = 0; i < input1.length(); i++)
+		{
+			if(input[i] == '&')
+			{
+				ands[count] = i;
+				count++;
+				mult = true;
+			}
+		}
+		if(mult)
+		{
+			tmp = "";
+			for (int a = 0; a < ands[location]; a++)
+			{
+				tmp += input[a];
+			}
+			commandset[location] = tmp;
+
+			while(ands[location + 1] != 0)//handles all but the last one
+			{
+				tmp = "";
+				for (int a = ands[location] + 1; a < ands[location + 1]; a++)
+				{		
+						tmp += input[a];
+				}
+				commandset[location + 1] = tmp;
+				location++;
+			}
+
+			tmp = "";
+			for (int a = ands[location] + 1; a <= input1.length(); a++)
+			{
+				tmp += input[a];
+			}
+			commandset[location + 1] = tmp;
+			mult = false;
+		}
+		multcmd(commandset, pathstat);
+	}
+
+	else
+	{
+		ifstream infile(input1);
+		while(getline(infile, shellcmds))
+		{
+
+			if (shellcmds.compare(0,4,"exit") == 0)
+				exit(0);
+
+			else if (shellcmds.compare(0,2,"ls") == 0 && !pathstat)
+			{
+				char* cwd2 = getcwd(cwd2,100);
+				stringstream ss;
+				string adder;
+				ss << cwd2;
+				ss >> adder;
+				ls(shellcmds, adder);
+			}
+
+			else if(shellcmds.compare(0,2,"cd") == 0)
+				cd(shellcmds);
+
+			else if(shellcmds.compare(0,3,"cat") == 0 && !pathstat)
+				cat(shellcmds);
+
+			else if(shellcmds.compare(0, 2, "rm") == 0 && !pathstat)
+				rm(shellcmds);
+			
+			else if(shellcmds.compare(0, 4, "path") == 0)
+				path(shellcmds);
+
+			else if(shellcmds.compare(0, 4, "echo") == 0 && !pathstat)
+				echo(shellcmds);
+
+			else if (shellcmds.compare(0,5, "sleep") == 0 && ! pathstat)
+				sleep(shellcmds);
+
+			else if(shellcmds.length() == 0)
+			{
+			}
+			else
+			{
+				cout<<"error command not found" << endl;
+			}
+		}
+	}
+
 }
 
 void echo(string input)
