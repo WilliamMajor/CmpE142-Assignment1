@@ -234,7 +234,9 @@ void multcmd(string input[], bool pathstat)
 			sleep(input[i]);
 
 		else if (input[i].find(".sh") != -1)
+		{
 			shellex(input[i], pathstat);
+		}
 
 
 		else if(input[i].length() == 0)
@@ -259,8 +261,10 @@ void shellex(string input1, bool pathstat)
 	int offset = 0;
 	int location = 0;
 	int length = 0;
+	int fd, saveout, oldout;
 	bool spcs = false;
 	bool mult = false;
+	char * cstr;
 	string shellcmds;
 	string tmp;
 
@@ -332,6 +336,27 @@ void shellex(string input1, bool pathstat)
 
 	else
 	{
+		if (input1.find(">") != -1)
+		{
+			
+			string file_location = input1;
+			file_location.erase(0,input1.find(">") + 2);
+			input1.erase(input1.find(">") - 1, input1.length());
+			cstr = new char[file_location.length()];
+			strcpy(cstr,file_location.c_str());
+			
+						
+			fd = open(cstr, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+			
+			saveout = dup(fileno(stdout));
+			oldout = dup(1);
+
+			dup2(fd,fileno(stdout));
+
+			delete[] cstr;
+			
+		}
+
 		ifstream infile(input1);
 		while(getline(infile, shellcmds))
 		{
@@ -375,7 +400,12 @@ void shellex(string input1, bool pathstat)
 				cout<<"error command not found" << endl;
 			}
 		}
+		
 	}
+	dup2(oldout, 1);
+	close(fd);
+	
+	
 
 }
 
