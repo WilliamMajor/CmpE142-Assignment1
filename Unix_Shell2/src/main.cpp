@@ -24,43 +24,159 @@
 
 using namespace std;
 
-void 	ls(string input);
+void 	ls(string input, string cwd);
 void 	cd(string input);
 void	cat(string input);
 void	rm(string input);
 void	path(string input);
 void	echo(string input);
+void 	sleep(string input);
+
+string GlobalPath[100];
+char const * GP;
 
 int main(int argc, char *argv[])
 {
 	string line = "";
+	string initialpath(getenv("HOME"));
+	GlobalPath[0] = initialpath;
+	bool badpath = false;
+	string commandset[100];
 	
 
 	while(1)
 	{
+		
+		int idx = 0;
+		 
+		while(!GlobalPath[idx].empty())
+		{
+			GP = GlobalPath[idx].data();
+			if(access(GP,X_OK) == -1)
+			{
+				cout << "warning one or more paths do not exist" << endl;
+				badpath = true;
+				idx++;
+				
+			}
+			badpath = false;
+			break;//this isn't the correct way to do this but it works for now... -_- I think
+		}
 		cout << "SuperShell > ";
+		line.clear();
 		getline(cin,line);
+		char input[100];
+		int spaces[100]; 
+		int ands[100];
+		int count = 0;
+		int count2 = 0;
+		int offset = 0;
+		int location = 0;
+		int length = 0;
+		int gah;
+		bool spcs = false;
+		bool mult = false;
+		string tmp;
+
+
+		if(line.find("&") != -1)
+			{
+			strcpy(input, line.c_str());
+
+			for (int i = 0; i < line.length(); i++)
+			{
+				if(input[i] == ' ')
+				{
+					spaces[count] = i;
+					count++;
+					spcs = true;
+				}
+			}
+			if(spcs)
+			{
+				while(spaces[count2] != 0)
+				{
+					line.erase(spaces[count2] - offset , 1);
+					count2++;
+					offset++;
+				}
+			}
+
+			strcpy(input, line.c_str());
+			count = 0;
+			for (int i = 0; i < line.length(); i++)
+			{
+				if(input[i] == '&')
+				{
+					ands[count] = i;
+					count++;
+					mult = true;
+				}
+			}
+			if(mult)
+			{
+				tmp = "";
+				for (int a = 0; a < ands[location]; a++)
+				{
+					tmp += input[a];
+				}
+				commandset[location] = tmp;
+				cout << commandset[location] << endl;
+
+				while(ands[location + 1] != 0)//handles all but the last one
+				{
+					tmp = "";
+					for (int a = ands[location] + 1; a < ands[location + 1]; a++)
+					{		
+							tmp += input[a];
+					}
+					commandset[location] = tmp;
+					cout << commandset[location] << endl;
+					location++;
+				}
+
+				tmp = "";
+				for (int a = ands[location] + 1; a <= line.length(); a++)
+				{
+					tmp += input[a];
+				}
+				commandset[location] = tmp;
+				cout << commandset[location] << endl;
+				mult = false;
+			}
+		}
+		
 	
 		if (line.compare(0,4,"exit") == 0)
 			exit(0);
 
-		else if (line.compare(0,2,"ls") == 0)
-			ls(line);
+		else if (line.compare(0,2,"ls") == 0 && !badpath)
+		{
+			char* cwd2 = getcwd(cwd2,100);
+			stringstream ss;
+			string adder;
+			ss << cwd2;
+			ss >> adder;
+			ls(line, adder);
+		}
 
 		else if(line.compare(0,2,"cd") == 0)
 			cd(line);
 
-		else if(line.compare(0,3,"cat") == 0)
+		else if(line.compare(0,3,"cat") == 0 && !badpath)
 			cat(line);
 
-		else if(line.compare(0, 2, "rm") == 0)
+		else if(line.compare(0, 2, "rm") == 0 && !badpath)
 			rm(line);
 		
 		else if(line.compare(0, 4, "path") == 0)
 			path(line);
 
-		else if(line.compare(0, 4, "echo") == 0)
+		else if(line.compare(0, 4, "echo") == 0 && !badpath)
 			echo(line);
+
+		else if (line.compare(0,5, "sleep") == 0 && ! badpath)
+			sleep(line);
 
 		else if(line.length() == 0)
 		{
@@ -75,23 +191,101 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
+
 void echo(string input)
 {
 	cout << input.erase(0,5)<<endl;
 }
 
-void path(string input)
+void sleep(string input)
 {
-
+	input.erase(0,6);
+	int timer = stoi(input);
+	sleep(timer);
 }
 
-void ls(string input)
+void path(string input)
+{
+	int spaces[100];
+	string tmp;
+	bool fwdslash;
+	int location = 0;
+	int length = 0;
+	char char_array[input.length() + 1];
+	int count = 0;
+	char const * c;
+
+	strcpy(char_array, input.c_str());
+
+
+	for (int i = 0; i < input.length(); i++)
+	{
+		
+		if(char_array[i] == ' ')
+		{
+			spaces[count] = i;
+			count++;
+		}
+	}
+	if (input.length() == 4)
+	{
+		GlobalPath[0] = "0";
+	}
+	else
+	{
+		while(spaces[location + 1] != 0)//handles all but the last one
+		{
+			fwdslash = true;
+			tmp = "";
+			for (int a = spaces[location] + 1; a < spaces[location + 1]; a++)
+			{
+				if((char_array[a] == '/') && fwdslash && ( a == spaces[location] +1))
+				{
+					fwdslash = false;
+				}
+				else
+				{
+					tmp += char_array[a];
+				}
+			}
+			GlobalPath[location] = tmp;
+			location++;
+		}
+
+		fwdslash = true;
+		tmp = "";
+		for(int a = spaces[location] + 1; a < sizeof(char_array); a++) // handle the last one
+		{
+			if((char_array[a] == '/') && fwdslash && ( a == spaces[location] +1))
+			{
+				fwdslash = false;
+			}
+			else
+			{
+				tmp += char_array[a];
+			}
+		}
+		GlobalPath[location] = tmp;
+	}
+
+	// while(!files[location].empty())
+	// {
+	// 	c = files[location].data();
+	// 	if(access(c,X_OK) == -1)
+	// 	{
+	// 		cout <<"error could not find file"<<endl;
+	// 	}
+	// 	location++;
+	// }
+}
+
+void ls(string input, string cwd)
 {
 	int rc, found, found2, saveout, fd, fd2;
 	string file_location, testfile, testfile2;
+	string ls = "ls";
 	
 	rc = fork();
-	
 	if (rc < 0)
 	{
 		cout << "fork failed." << endl;
@@ -140,7 +334,7 @@ void ls(string input)
 						file_location = input.substr(3,found-4);
 						cd(file_location);
 
-						string ls = "ls";
+						//string ls = "ls";
 						char* argm[2];
 						argm[0] = (char*)ls.c_str();
 						argm[1] = NULL;
@@ -149,8 +343,13 @@ void ls(string input)
 				}
 				else
 				{
-					if (found > 3)
+					if (found >= 3)
 					{	
+						if(input.length() == 4)
+						{
+							cout << "bash: syntax error near unexpected token `newline'"<<endl;
+							exit(1);
+						}
 						
 						testfile = input.substr(found+2,input.length());
 						char * cstr = new char[testfile.length()];
@@ -167,7 +366,7 @@ void ls(string input)
 						file_location = input.substr(3,found-4);
 						cd(file_location);
 
-						string ls = "ls";
+						//string ls1 = "ls";
 						char* argm[2];
 						argm[0] = (char*)ls.c_str();
 						argm[1] = NULL;
@@ -188,7 +387,7 @@ void ls(string input)
 
 						delete[] cstr;
 
-						string ls = "ls";
+						//string ls2 = "ls";
 						char* argm[2];
 						argm[0] = (char*)ls.c_str();
 						argm[1] = NULL;
@@ -203,19 +402,39 @@ void ls(string input)
 			{	
 				if (input.length() > 2)
 				{
+					DIR *blah = NULL;
+					struct dirent *DirEntry = NULL;
+					unsigned char isFile =0x8;
+					char const * filecmd; 
+					//string ls = "ls";
+					
 					file_location = input.substr(3,input.length());
-					cd(file_location);
-
-					string ls = "ls";
-					char* argm[2];
-					argm[0] = (char*)ls.c_str();
-					argm[1] = NULL;
-					execvp(argm[0], argm);
-					cout << "error";
+					cwd += "/";
+					cwd += file_location;
+					filecmd = cwd.data();
+					blah = opendir(filecmd);
+					if(blah == NULL) //we have a file
+					{
+						char* argm[3];
+						argm[0] = (char*)ls.c_str();
+						argm[1] = (char*)file_location.c_str();
+						argm[2]	= NULL;
+						execvp(argm[0], argm);
+						cout << "error";
+					}
+					else
+					{
+						cd(file_location);
+						char* argm[2];
+						argm[0] = (char*)ls.c_str();
+						argm[1] = NULL;
+						execvp(argm[0], argm);
+						cout << "error";
+					}
 				}
 				else
 				{
-					string ls = "ls";
+					//string ls = "ls";
 					char* argm[2];
 					argm[0] = (char*)ls.c_str();
 					argm[1] = NULL;
@@ -257,7 +476,10 @@ void cd(string input)
 	}
 	else 
 	{
+		if(input.find("cd") != -1)
+		{
 		directory = input.substr(3,input.length()-2);
+		}
 		
 		ss << cwd;
 		ss >> ncwd;
@@ -275,13 +497,14 @@ void cd(string input)
 void cat(string input)
 {
 	int rc, fr, t, found;
+	int count = 0;
 	int spaces[100];
 	string newinput;
 	char const * c;
 	char char_array[input.length() + 1];
 
 	strcpy(char_array, input.c_str());
-	int count = 0;
+	
 	for (int i = 0; i < input.length(); i++)
 	{
 		
@@ -427,7 +650,7 @@ void rm(string input)
 					remove(filecmd);
 					break;
 				case DT_DIR:
-					cout << "this is a diretory" << endl;
+					cout << "error this is a diretory" << endl;
 					break;
 				default:
 					cout <<"Well this is awkward" << endl;
@@ -446,6 +669,37 @@ void rm(string input)
 		{
 			cout <<"rm: missing operand" << endl;
 		}
+		else
+		{
+			char* cwd2 = getcwd(cwd2,100);
+			stringstream ss;
+			string adder;
+			ss << cwd2;
+			ss >> adder;
+			found = input.find(" ");
+			command = input;
+			command.erase(0,found + 1);
+			adder +="/";
+			adder += command;
+			char const * filecmd = command.data();
+			blah = opendir(adder.data());
+			if(blah == NULL)
+			{
+				if(remove(filecmd) != 0)
+				{
+					cout << "file does not exits"<< endl;
+					exit(1);
+				}
+			}
+			else
+			{
+				cout << "error this is a directory"<<endl;	
+			}
+			
+			
+		}
+		
+
 	}
 }
 
