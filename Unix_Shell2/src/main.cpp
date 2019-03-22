@@ -31,6 +31,7 @@ void	rm(string input);
 void	path(string input);
 void	echo(string input);
 void 	sleep(string input);
+void 	multcmd(string input[], bool padstat);
 
 string GlobalPath[100];
 char const * GP;
@@ -41,7 +42,7 @@ int main(int argc, char *argv[])
 	string initialpath(getenv("HOME"));
 	GlobalPath[0] = initialpath;
 	bool badpath = false;
-	string commandset[100];
+	
 	
 
 	while(1)
@@ -80,12 +81,13 @@ int main(int argc, char *argv[])
 
 
 		if(line.find("&") != -1)
-			{
+		{
+			string commandset[100];
 			strcpy(input, line.c_str());
 
 			for (int i = 0; i < line.length(); i++)
 			{
-				if(input[i] == ' ')
+				if(((input[i] == ' ') && (input[i+1] == '&')) || ((input[i] == ' ') && (input[i-1] == '&')))
 				{
 					spaces[count] = i;
 					count++;
@@ -121,7 +123,6 @@ int main(int argc, char *argv[])
 					tmp += input[a];
 				}
 				commandset[location] = tmp;
-				cout << commandset[location] << endl;
 
 				while(ands[location + 1] != 0)//handles all but the last one
 				{
@@ -130,8 +131,7 @@ int main(int argc, char *argv[])
 					{		
 							tmp += input[a];
 					}
-					commandset[location] = tmp;
-					cout << commandset[location] << endl;
+					commandset[location + 1] = tmp;
 					location++;
 				}
 
@@ -140,50 +140,52 @@ int main(int argc, char *argv[])
 				{
 					tmp += input[a];
 				}
-				commandset[location] = tmp;
-				cout << commandset[location] << endl;
+				commandset[location + 1] = tmp;
 				mult = false;
 			}
-		}
-		
-	
-		if (line.compare(0,4,"exit") == 0)
-			exit(0);
-
-		else if (line.compare(0,2,"ls") == 0 && !badpath)
-		{
-			char* cwd2 = getcwd(cwd2,100);
-			stringstream ss;
-			string adder;
-			ss << cwd2;
-			ss >> adder;
-			ls(line, adder);
+			multcmd(commandset, badpath);
 		}
 
-		else if(line.compare(0,2,"cd") == 0)
-			cd(line);
-
-		else if(line.compare(0,3,"cat") == 0 && !badpath)
-			cat(line);
-
-		else if(line.compare(0, 2, "rm") == 0 && !badpath)
-			rm(line);
-		
-		else if(line.compare(0, 4, "path") == 0)
-			path(line);
-
-		else if(line.compare(0, 4, "echo") == 0 && !badpath)
-			echo(line);
-
-		else if (line.compare(0,5, "sleep") == 0 && ! badpath)
-			sleep(line);
-
-		else if(line.length() == 0)
-		{
-		}
 		else
 		{
-			cout<<"error command not found" << endl;
+			if (line.compare(0,4,"exit") == 0)
+				exit(0);
+
+			else if (line.compare(0,2,"ls") == 0 && !badpath)
+			{
+				char* cwd2 = getcwd(cwd2,100);
+				stringstream ss;
+				string adder;
+				ss << cwd2;
+				ss >> adder;
+				ls(line, adder);
+			}
+
+			else if(line.compare(0,2,"cd") == 0)
+				cd(line);
+
+			else if(line.compare(0,3,"cat") == 0 && !badpath)
+				cat(line);
+
+			else if(line.compare(0, 2, "rm") == 0 && !badpath)
+				rm(line);
+			
+			else if(line.compare(0, 4, "path") == 0)
+				path(line);
+
+			else if(line.compare(0, 4, "echo") == 0 && !badpath)
+				echo(line);
+
+			else if (line.compare(0,5, "sleep") == 0 && ! badpath)
+				sleep(line);
+
+			else if(line.length() == 0)
+			{
+			}
+			else
+			{
+				cout<<"error command not found" << endl;
+			}
 		}
 
 	}
@@ -191,6 +193,53 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
+void multcmd(string input[], bool pathstat)
+{
+	int i = 0;
+	while(!input[i].empty())
+	{
+		if (input[i].compare(0,4,"exit") == 0)
+			exit(0);
+
+		else if (input[i].compare(0,2,"ls") == 0 && !pathstat)
+		{
+			char* cwd2 = getcwd(cwd2,100);
+			stringstream ss;
+			string adder;
+			ss << cwd2;
+			ss >> adder;
+			ls(input[i], adder);
+		}
+
+		else if(input[i].compare(0,2,"cd") == 0)
+			cd(input[i]);
+
+		else if(input[i].compare(0,3,"cat") == 0 && !pathstat)
+			cat(input[i]);
+
+		else if(input[i].compare(0, 2, "rm") == 0 && !pathstat)
+			rm(input[i]);
+		
+		else if(input[i].compare(0, 4, "path") == 0)
+			path(input[i]);
+
+		else if(input[i].compare(0, 4, "echo") == 0 && !pathstat)
+			echo(input[i]);
+
+		else if (input[i].compare(0,5, "sleep") == 0 && !pathstat)
+			sleep(input[i]);
+
+		else if(input[i].length() == 0)
+		{
+		}
+		else
+		{
+			cout<<"error command not found" << endl;
+		}
+		i++;
+	}
+	
+}
 
 void echo(string input)
 {
