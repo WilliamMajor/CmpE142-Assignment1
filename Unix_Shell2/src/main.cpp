@@ -266,7 +266,39 @@ void cd(string input)
 
 void cat(string input)
 {
-	//cat code goes here...
+	int rc, fr, t, found;
+	string newinput;
+	char const * c;
+
+	found = input.find(" ");
+	
+	if(input.length() == 3)
+	{
+		while(getline(cin,newinput))
+		{
+			cout << newinput << endl;
+		}
+	}
+
+	//else if(1)//look for how many spaces there are and then put each entry into  const char * array
+
+	// c = input.data();
+	// cout << c << endl;
+	// fr = open(c, O_RDONLY);
+
+	// if(fr < 0)
+	// {
+	// 	cout << "failed to open file" <<endl;
+	// 	exit(-1);
+	// }
+
+	// while (read(fr, &t, 1))
+	// {
+	// 	write(STDOUT_FILENO, &t, 1);
+	// }
+
+	// close(fr);
+	
 }
 
 void rm(string input)
