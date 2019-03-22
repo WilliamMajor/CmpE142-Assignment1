@@ -16,15 +16,11 @@
 #include <sstream>
 #include <cstdlib>
 #include <fstream>
-#include<sys/wait.h>
+#include <sys/wait.h>
 #include <ctype.h>
 #include <fcntl.h>
 #include <dirent.h>
-
-
 #include <experimental/filesystem>
-
-
 
 using namespace std;
 
@@ -32,14 +28,15 @@ void 	ls(string input);
 void 	cd(string input);
 void	cat(string input);
 void	rm(string input);
-void	cwdprint(void);
 
 int main(int argc, char *argv[])
 {
-	string line = ""; 
+	string line = "";
+	
+
 	while(1)
 	{
-		//cwdprint();
+		cout << "SuperShell > ";
 		getline(cin,line);
 	
 		if (line.compare(0,4,"exit") == 0)
@@ -74,15 +71,10 @@ int main(int argc, char *argv[])
 		{
 			cout<<"error command not found" << endl;
 		}
+
 	}
 
 	return 0;
-}
-
-void cwdprint(void)
-{
-	char* cwd = getcwd(cwd,100);
-	cout << cwd << " ";
 }
 
 void ls(string input)
@@ -123,12 +115,9 @@ void ls(string input)
 						char * cstr = new char[testfile.length()];
 						strcpy(cstr,testfile.c_str());
 
-
 						testfile2 = input.substr(found2+2,input.length());
 						char * cstr2 = new char[testfile2.length()];
 						strcpy(cstr2,testfile2.c_str());
-						
-
 						
 						fd = open(cstr, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 
@@ -230,11 +219,6 @@ void ls(string input)
 			
 
 		}
-		// char * direct = new char[input.size() + 1]; // do we use this...
-		// copy(input.begin(), input.end(), direct);
-		// direct[input.size()] = '\0';
-		// system(direct);
-		// kill(pid,SIGTERM);
 	}
 	else
 	{
@@ -248,7 +232,7 @@ void cd(string input)
 {
 	int spaces = 0;
 	char* cwd = getcwd(cwd,100);
-	string directory, ncwd;
+	string directory, ncwd, olddirectory;
 	stringstream ss;
 
 	for (int idx = 0; idx < input.length(); idx++)
@@ -265,24 +249,24 @@ void cd(string input)
 	}
 	else 
 	{
-		
-		
 		directory = input.substr(3,input.length()-2);
 		
 		ss << cwd;
 		ss >> ncwd;
+		olddirectory = directory;
 		directory = ncwd + "/" + directory;
 		char const * c = directory.data();
-		chdir(c);
-		
-		
+		if(chdir(c) != 0)
+		{
+			cout << "bash: cd: " << olddirectory << " No such file or directory"<<endl;
+		}	
 	}
 	
 }
 
 void cat(string input)
 {
-	
+	//cat code goes here...
 }
 
 void rm(string input)
@@ -348,13 +332,4 @@ void rm(string input)
 	}
 }
 
-// string charptostr(char* input)
-// {
-// 	stringstream ss;
-// 	string output;
-// 	ss << input;
-// 	ss >> output;
-
-// 	return output;
-// }
 
